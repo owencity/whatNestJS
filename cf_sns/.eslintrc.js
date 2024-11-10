@@ -23,7 +23,7 @@ module.exports = {
     '@typescript-eslint/no-explicit-any': 'off',
   'no-trailing-spaces': 'error', // 줄 끝 불필요한 공백 방지
     "prettier/prettier": [
-      "error",
+      "off",
       {
         "endOfLine": "auto"
       }
