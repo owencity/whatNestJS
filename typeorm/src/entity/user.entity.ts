@@ -1,4 +1,10 @@
-import { Column, CreateDateColumn, Entity, Generated, PrimaryGeneratedColumn, UpdateDateColumn, VersionColumn } from "typeorm";
+import { Column, CreateDateColumn, Entity, Generated, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn, VersionColumn } from "typeorm";
+import { ProfileModel } from "./profile.entity";
+
+export enum Role{
+    USER = 'user',
+    ADMIN = 'admin',
+}
 
 @Entity()
 export class UserModel{
@@ -9,22 +15,39 @@ export class UserModel{
     @PrimaryGeneratedColumn()
     id: number;
 
+    @Column()
+    email: string;
+    // @Column({
+    //     // 데이터 베이스에서 인지하는 칼럼 타입
+    //     // 자동으로 유추, 안넣어도되지만 특정한 유추한 타입을 넣으려면 지정해줘야함
+    //     type:'varchar',
+    //     // 데이터 베이스 칼럼 이름 
+    //     // 프로퍼티 이름으로 자동 유추
+    //     name:'_title',
+    //     // 값의 길이, string이나 varchar 에는 지원하나 text 타입에는 지원하지않음
+    //     length: 300,
+    //     // null 이 가능한지
+    //     nullable: true,
+    //     // true 면 처음 저장할때만 값 지정 가능 
+    //     // 이후에는 값 변경 불가능,
+    //     update: false,
+    //     // find()를 실행할 때 기본으로 값을 불러올지 
+    //     // 기본값이 true,
+    //     select: false,
+    //     // 기본값 
+    //     // 아무것도 입력 안했을 때 기본으로 입력되게 되는 값
+    //     default: 'default value',
+    //     // 컬럼중에서 유일무이한 값이 돼야하는지
+    //     unique: false,
+    // })
+    // title: string;//
+
     @Column({
-        // 데이터 베이스에서 인지하는 칼럼 타입
-        // 자동으로 유추, 안넣어도되지만 특정한 유추한 타입을 넣으려면 지정해줘야함
-        type:'varchar',
-        // 데이터 베이스 칼럼 이름 
-        // 프로퍼티 이름으로 자동 유추
-        name:'_title',
-        // 값의 길이
-        length: 300,
-        // null 이 가능한지
-        nullable: true,
-        // true 면 처음 저장할때만 값 지정 가능 
-        // 이후에는 값 변경 불가능,
-        update: false,
+        type: 'enum',
+        enum: Role, 
+        default: Role.USER,
     })
-    title: string;
+    role : Role;
     
     @CreateDateColumn() // 데이터가 생성되는 날짜와 시간이 자동으로 찍힌다.
     createdAt: Date;
@@ -38,4 +61,7 @@ export class UserModel{
     @Column()
     @Generated('increment') // 자동으로 1씩 올라가는 기능 column 과 세트
     additionalId: number;
+
+    @OneToOne(() => ProfileModel, (profile) => profile.user)
+    profile: ProfileModel;
 }
