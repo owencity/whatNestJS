@@ -1,5 +1,6 @@
-import { Column, CreateDateColumn, Entity, Generated, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn, VersionColumn } from "typeorm";
+import { Column, CreateDateColumn, Entity, Generated, JoinColumn, OneToMany, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn, VersionColumn } from "typeorm";
 import { ProfileModel } from "./profile.entity";
+import { PostModel } from "./post.entity";
 
 export enum Role{
     USER = 'user',
@@ -63,5 +64,9 @@ export class UserModel{
     additionalId: number;
 
     @OneToOne(() => ProfileModel, (profile) => profile.user)
+    @JoinColumn()
     profile: ProfileModel;
+
+    @OneToMany(() => PostModel, (post) => post.author)
+    posts: PostModel[]; 
 }
