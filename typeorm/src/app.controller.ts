@@ -18,9 +18,38 @@ export class AppController {
       private readonly postRepository: Repository<PostModel>,
       @InjectRepository(TagModel)
       private readonly tagRepository: Repository<TagModel>,
-       ) {
+       ) { }
 
-    }
+       @Post('sample')
+       async sample() {
+        // 모델에 해당되는 객체 생성 - 저장은 안함
+        // const user1 = this.userRepository.create({
+        //   email: 'test@naver.com',
+        // });
+
+        // 저장
+        // const user2 = await this.userRepository.save( {
+        //   email : 'test@naver.com'
+        // });
+
+        // preload
+        // 입력된 값을 기반으로 데이터베이스에 있는 데이터를 불러오고
+        // 추가 입력된 값으로 데이터베이스에서 가져온 값들을 대체함.
+        // 저장하지는 않음
+        // const user3 = await this.userRepository.preload({
+        //   id: 101,
+        //   email: 'factoto@naver.com',
+        // });
+
+        // 삭제하기
+        // await this.userRepository.delete(
+        //   101,
+        // );
+
+        await this.userRepository.increment({
+          id: 1,
+        }, 'count', 2);
+       }
 
     @Post('users')
     async postUser() {
