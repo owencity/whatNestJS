@@ -12,32 +12,33 @@ export interface PostModel {
     likeCount: number;
     commentCount: number;
   }
-  let posts : PostModel[] = [
-    {
-      id: 1,
-      author: 'newjeans_official',
-      title: '뉴진스 민지',
-      content: '메이크업 고치고 있는 민지',
-      likeCount: 1000000,
-      commentCount: 999999,
-    },
-    {
-      id: 2,
-      author: 'newjeans_official',
-      title: '뉴진스 해린',
-      content: '노래 연습하고 있는 해린',
-      likeCount: 1000000,
-      commentCount: 999999,
-    },
-    {
-      id: 3,
-      author: 'blackpink_official',
-      title: '뉴진스 해린',
-      content: '공연하고 있는 로제',
-      likeCount: 1000000,
-      commentCount: 999999,
-    },
-  ];
+
+  // let posts : PostModel[] = [
+  //   {
+  //     id: 1,
+  //     author: 'newjeans_official',
+  //     title: '뉴진스 민지',
+  //     content: '메이크업 고치고 있는 민지',
+  //     likeCount: 1000000,
+  //     commentCount: 999999,
+  //   },
+  //   {
+  //     id: 2,
+  //     author: 'newjeans_official',
+  //     title: '뉴진스 해린',
+  //     content: '노래 연습하고 있는 해린',
+  //     likeCount: 1000000,
+  //     commentCount: 999999,
+  //   },
+  //   {
+  //     id: 3,
+  //     author: 'blackpink_official',
+  //     title: '뉴진스 해린',
+  //     content: '공연하고 있는 로제',
+  //     likeCount: 1000000,
+  //     commentCount: 999999,
+  //   },
+  // ];
 
 
 @Injectable()
@@ -49,7 +50,9 @@ export class PostsService {
       
     }
     async getAllPosts() {
-        return this.postsRepository.find();
+        return this.postsRepository.find({
+         relations:['author']
+        });
     }
 
       async getPostById(id: number) {
@@ -62,6 +65,7 @@ export class PostsService {
             where: {
               id, // id:id -> 키값과 value 가같으면 생략 가능
             },
+          
           });
           
           if(!post) {

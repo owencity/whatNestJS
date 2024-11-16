@@ -46,11 +46,62 @@ export class AppController {
         //   101,
         // );
 
-        await this.userRepository.increment({
-          id: 1,
-        }, 'count', 2);
-       }
+        // 값을 증가 시킴
+      //   await this.userRepository.increment({
+      //     id: 1,
+      //   }, 'count', 2);
+      //  }
 
+       // 값을 감소시킴
+      //  await this.userRepository.decrement({
+      //   id: 1,
+      //  }, 'count', 1);
+
+
+      // 갯수 카운팅 하기
+      // const count = await this.userRepository.count({
+      //   where: {
+      //     email: ILike('%0%'),
+      //   },
+      // })
+
+      // // sum
+      // const sum = await this.userRepository.sum('count', {
+      //   email: ILike('%0%'),
+      // });
+
+      // average
+      // const average = await this.userRepository.average('count', {
+      //   id: LessThan(4),
+      // });
+
+      // 최소값 
+        // const min = await this.userRepository.minimum('count', {
+        //   id: LessThan(4),
+        // });
+      // 최대값
+        // const max = await this.userRepository.maximum('count', {
+        //   id: LessThan(4),
+        // });
+        
+
+        // const users = await this.userRepository.find({
+          
+        // });
+
+        // const userOne = await this.userRepository.findOne({
+        //   where: {
+        //     id: 3,
+        //   }
+        // });
+
+
+        // pagination 할때 사용하는 메서드
+        const usersAndCount = await this.userRepository.findAndCount({
+          take: 3,
+        });
+
+    }
     @Post('users')
     async postUser() {
       for(let i = 0; i < 100; i++){
@@ -63,6 +114,10 @@ export class AppController {
     @Get('users') 
     getUsers() {
       return this.userRepository.find({
+        order: {
+          id: 'ASC',
+        },
+        
         where : {
           // 아닌경우 가져오기
           // id: Not(1),

@@ -1,5 +1,4 @@
 import { ChildEntity, Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, TableInheritance, UpdateDateColumn } from "typeorm";
-import { EntityListenerMetadata } from "typeorm/metadata/EntityListenerMetadata";
 
 export class BaseModel{
     @PrimaryGeneratedColumn()
