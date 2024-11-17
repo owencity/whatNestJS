@@ -6,6 +6,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { PostsModel } from './posts/entities/posts.entity';
 import { UsersModule } from './users/users.module';
 import { UsersModel } from './users/entities/users.entity';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [PostsModule,
@@ -26,6 +27,7 @@ import { UsersModel } from './users/entities/users.entity';
       // 프로덕션 환경에서는 데이터 손실 위험이 있기 때문에 false 로 진행해야한다. (JPA update, create 기능이랑 비슷)
     }),
     UsersModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService],
