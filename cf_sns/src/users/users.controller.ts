@@ -20,4 +20,6 @@ export class UsersController {
   //     password,
   //   });
   // }
+
+  // 테스트용 API 지워놓는 습관을 들여야한다.
 }
