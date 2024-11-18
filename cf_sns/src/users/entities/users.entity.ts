@@ -10,16 +10,14 @@
     role: [RolesEnum.USER, RolesEnum.ADMIN]
 */
 
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { RolesEnum } from "./const/rolse.const";
 import { PostModel } from "src/posts/posts.service";
 import { PostsModel } from "src/posts/entities/posts.entity";
+import { BaseModel } from "src/common/entity/base.entity";
 
 @Entity()
-export class UsersModel {
-
-    @PrimaryGeneratedColumn()
-    id: number;
+export class UsersModel extends BaseModel{
 
     @Column({
         // 1 길이

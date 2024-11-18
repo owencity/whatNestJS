@@ -1,5 +1,8 @@
-import { Body, Controller, Head, Headers, Post } from '@nestjs/common';
+import { Body, Controller, Head, Headers, Post, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
+import { MaxLengthPipe, MinLengthPipe, PasswordPipe } from './pipe/password.pipe';
+import { BasicTokenGuard } from './guard/basic-token.guard';
+import { AccessTokenGuard, RefreshTokenGuard } from './guard/bearer-token.guard';
 
 @Controller('auth')
 export class AuthController {
@@ -7,6 +10,7 @@ export class AuthController {
 
 
   @Post('token/access')
+  @UseGuards(AccessTokenGuard)
    postTokenAccess(@Headers('authorization') rawToken: string) {
     const token = this.authService.extractTokenFromHeader(rawToken, true);
 
@@ -22,6 +26,7 @@ export class AuthController {
   }
 
   @Post('token/refresh')
+  @UseGuards(RefreshTokenGuard)
   postTokenRefresh(@Headers('authorization') rawToken: string) {
    const token = this.authService.extractTokenFromHeader(rawToken, true);
 
@@ -38,8 +43,8 @@ export class AuthController {
 
 
   @Post('login/email')
+  @UseGuards(BasicTokenGuard)
   postLoginEmail(
-
     @Headers('authorization') rawToken: string,
     // @Body('email') email: string,
     // @Body('password') password: string,
@@ -56,7 +61,7 @@ export class AuthController {
   registerEmail(
     @Body('nickname') nickname: string,
     @Body('email') email: string,
-    @Body('password') password: string,
+    @Body('password', new MaxLengthPipe(8), new MinLengthPipe(3)) password: string, // Pipe 에서 유효성검사 진행, 통과되지않으면 아래 코드는 실행되지않는다.
   ) {
     return this.authService.registerWithEmail({
       nickname,
