@@ -10,7 +10,7 @@ export class AuthController {
 
 
   @Post('token/access')
-  @UseGuards(AccessTokenGuard)
+  @UseGuards(RefreshTokenGuard)
    postTokenAccess(@Headers('authorization') rawToken: string) {
     const token = this.authService.extractTokenFromHeader(rawToken, true);
 

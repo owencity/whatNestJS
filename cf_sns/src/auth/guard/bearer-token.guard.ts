@@ -1,10 +1,11 @@
-import { CanActivate, ExecutionContext, Inject, Injectable, UnauthorizedException } from "@nestjs/common";
-import { Observable } from "rxjs";
+import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from "@nestjs/common";
 import { AuthService } from "../auth.service";
 import { UsersService } from "src/users/users.service";
 
+@Injectable()
 export class BearerTokenGuard implements CanActivate {
-    constructor (private readonly authService: AuthService,
+    constructor (
+        private readonly authService: AuthService,
         private readonly usersService: UsersService,
     ) {} 
 
