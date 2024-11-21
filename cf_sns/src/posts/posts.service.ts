@@ -1,8 +1,13 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { Repository } from 'typeorm';
+import { Injectable, NotFoundException, Post, UseGuards } from '@nestjs/common';
+import { MoreThan, Repository } from 'typeorm';
 import { PostsModel } from './entities/posts.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UsersModel } from 'src/users/entities/users.entity';
+import { CreatePostDto } from './dto/create-post.dto';
+import { UpdatePostDto } from './dto/update-post.dto';
+import { PaginatePostDto } from './dto/paginte-post.dto';
+import { AccessTokenGuard } from 'src/auth/guard/bearer-token.guard';
+import { User } from 'src/users/decorator/user.decorator';
 
 export interface PostModel {
     id: number;
@@ -55,6 +60,49 @@ export class PostsService {
         });
     }
 
+  
+    // 프로덕션에서 사용하는 코드 x , 올라갈때 삭제해야함 
+    async generatePosts(userId: number) {
+      for(let i = 0; i < 100; i++) {
+        await this.createPost(userId, {
+          title: `임의로 생성된 포스트 제목 ${i}`,
+          content: `임의로 생성된 포스트 내용 ${i}`,
+        });
+      }
+    }
+
+
+    // 오름차순으로 정렬하는 pagination만 구현한다.
+    async paginatePosts(dto: PaginatePostDto) {
+      const posts = await this.postsRepository.find({
+        // 1, 2, 3, 4, 5
+        where: {
+          // 더크다, 더 많다
+          id: MoreThan(dto.where__id_more_than), 
+        },
+        // order__createdAt 
+        order: {
+          createdAt: dto.order__createdAt,
+        },
+        take: dto.take,
+      });
+      return {
+        data: posts,
+      }
+    }
+
+    /* 
+      Response 
+
+      data: Data[]
+      cursor: {
+        after: 마지막 Data의 ID
+      },
+
+      count : 응답한 데이터의 갯수
+      next: 다음 요청을 할때 사용할 URL
+    */
+
       async getPostById(id: number) {
           // const post = posts.find((post) => post.id === +id); // + -> 암묵적인 자바스크립트의 형변환 , +는 숫자가아닌 경우 숫자로 변환하려고 시도
           // 문자열이 변환가능한 숫자인경우 변환, 아닌경우 NaN의 결과를 냄 number(id) 와 같은 기능을한다.
@@ -75,7 +123,9 @@ export class PostsService {
           return post;
       }
 
-    async createPost(authorId: number, title: string, content: string) {
+    async createPost(authorId: number, postDto: CreatePostDto) {
+      // title: string, content: 
+      
       // 1) create -> 저장할 객체를 생성 
       // 2) save -> 객체를 저장한다. (create 메서드에서 생성한 객체로)
 
@@ -83,8 +133,9 @@ export class PostsService {
         author: {
           id: authorId,
         },
-        title,
-        content,
+        ...postDto,
+        // title,
+        // content,
         likeCount:0,
         commentCount : 0,
       });
@@ -93,7 +144,9 @@ export class PostsService {
       return newPost;
     }
 
-    async updatePost(postId: number, title: string, content: string) {
+    async updatePost(postId: number, postDto : UpdatePostDto) {
+
+      const {title, content} = postDto;
       // save의 기능
       // 1 만약에 데이터가 존재하지 않는다면 (id기준으로) 새로 생성한다. 
       // 2 만약에 데이터가 존재한다면 (같은 id의 값이 존재한다면) 존재하던 값을 업데이트한다.
