@@ -87,17 +87,17 @@ export class PostsService {
     async cursorPaginatePosts(dto: PaginatePostDto) {
       const where : FindOptionsWhere<PostsModel> = {};
 
-      if(dto.where__id_less_than) {
-        where.id = LessThan(dto.where__id_less_than);
-      } else if(dto.where__id_more_than) {
-        where.id = MoreThan(dto.where__id_more_than);
+      if(dto.where__id__less_than) {
+        where.id = LessThan(dto.where__id__less_than);
+      } else if(dto.where__id__more_than) {
+        where.id = MoreThan(dto.where__id__more_than);
       }
 
       const posts = await this.postsRepository.find({
         // 1, 2, 3, 4, 5
         where: {
           // 더크다, 더 많다
-          id: MoreThan(dto.where__id_more_than ?? 0),  // ??는 null 또는 undefined를 만나면 우측값을 반환함 , null 이나 undefined일경우 기본값으로 0 사용하겠다
+          id: MoreThan(dto.where__id__more_than ?? 0),  // ??는 null 또는 undefined를 만나면 우측값을 반환함 , null 이나 undefined일경우 기본값으로 0 사용하겠다
           // 이와 반대로 ||는 Falsy값(0, '' , false, NaN, null, undefined)를 만나면 우측 값을 반환
         },
         // order__createdAt 
@@ -121,7 +121,7 @@ export class PostsService {
 
         for(const key of Object.keys(dto)) {
           if(dto[key]) {
-            if(key !== 'where__id_more_than' && key !== 'where__id_less_than'){
+            if(key !== 'where__id__more_than' && key !== 'where__id__less_than'){
               nextUrl.searchParams.append(key, dto[key]);
             }
           }
@@ -130,9 +130,9 @@ export class PostsService {
         let key = null;
 
         if(dto.order__createdAt === 'ASC') {
-          key = 'where__id_more_than';
+          key = 'where__id__more_than';
         } else {
-          key = 'where__id_less_than';
+          key = 'where__id__less_than';
         }
 
         nextUrl.searchParams.append(key , lastItem.id.toString());
