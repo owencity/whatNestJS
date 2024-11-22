@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException, Post, UseGuards } from '@nestjs/common';
-import { MoreThan, Repository } from 'typeorm';
+import { FindOptionsWhere, LessThan, MoreThan, Repository } from 'typeorm';
 import { PostsModel } from './entities/posts.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UsersModel } from 'src/users/entities/users.entity';
@@ -8,6 +8,7 @@ import { UpdatePostDto } from './dto/update-post.dto';
 import { PaginatePostDto } from './dto/paginte-post.dto';
 import { AccessTokenGuard } from 'src/auth/guard/bearer-token.guard';
 import { User } from 'src/users/decorator/user.decorator';
+import { HOST, PROTOCOL } from 'src/common/env.const';
 
 export interface PostModel {
     id: number;
@@ -74,11 +75,30 @@ export class PostsService {
 
     // 오름차순으로 정렬하는 pagination만 구현한다.
     async paginatePosts(dto: PaginatePostDto) {
+
+     if(dto.page) {
+      return this.pagePaginatePosts(dto);
+     } else {
+      return this.cursorPaginatePosts(dto);
+     }
+    }
+
+
+    async cursorPaginatePosts(dto: PaginatePostDto) {
+      const where : FindOptionsWhere<PostsModel> = {};
+
+      if(dto.where__id_less_than) {
+        where.id = LessThan(dto.where__id_less_than);
+      } else if(dto.where__id_more_than) {
+        where.id = MoreThan(dto.where__id_more_than);
+      }
+
       const posts = await this.postsRepository.find({
         // 1, 2, 3, 4, 5
         where: {
           // 더크다, 더 많다
-          id: MoreThan(dto.where__id_more_than), 
+          id: MoreThan(dto.where__id_more_than ?? 0),  // ??는 null 또는 undefined를 만나면 우측값을 반환함 , null 이나 undefined일경우 기본값으로 0 사용하겠다
+          // 이와 반대로 ||는 Falsy값(0, '' , false, NaN, null, undefined)를 만나면 우측 값을 반환
         },
         // order__createdAt 
         order: {
@@ -86,11 +106,47 @@ export class PostsService {
         },
         take: dto.take,
       });
+      // 해당되는 포스트가 0개 이상이면
+      // 마지막 포스트를 가져오고
+      // 아니면 null을 반환한다.
+      const lastItem =  posts.length > 0 && posts.length === dto.take ? posts[posts.length - 1] : null;
+      
+      const nextUrl = lastItem && new URL(`${PROTOCOL}://${HOST}/posts`);
+
+      if(nextUrl) {
+        /* 
+          dto의 키값들을 루핑하면서 키값에 해당하는 벨류가 존재하면 param에 그대로 붙여넣는다.
+          단 , where__id_more_than 값만 lastItem의 마지막 값으로 넣어준다.
+        */
+
+        for(const key of Object.keys(dto)) {
+          if(dto[key]) {
+            if(key !== 'where__id_more_than' && key !== 'where__id_less_than'){
+              nextUrl.searchParams.append(key, dto[key]);
+            }
+          }
+        }
+
+        let key = null;
+
+        if(dto.order__createdAt === 'ASC') {
+          key = 'where__id_more_than';
+        } else {
+          key = 'where__id_less_than';
+        }
+
+        nextUrl.searchParams.append(key , lastItem.id.toString());
+      }
+
       return {
         data: posts,
+        cursor: {
+          after: lastItem?.id ?? null,
+        },
+        count: posts.length,
+        next: nextUrl?.toString() ?? null,
       }
     }
-
     /* 
       Response 
 
@@ -102,6 +158,21 @@ export class PostsService {
       count : 응답한 데이터의 갯수
       next: 다음 요청을 할때 사용할 URL
     */
+
+      // 페이지기반 페이지네이션
+      async pagePaginatePosts(dto: PaginatePostDto) {
+        const [posts, count] = await this.postsRepository.findAndCount({
+          skip: dto.take * (dto.page - 1),
+          take: dto.take,
+          order: {
+            createdAt : dto.order__createdAt,
+          }
+        });
+        return {
+          data: posts,
+          total: count,
+        }
+      }
 
       async getPostById(id: number) {
           // const post = posts.find((post) => post.id === +id); // + -> 암묵적인 자바스크립트의 형변환 , +는 숫자가아닌 경우 숫자로 변환하려고 시도

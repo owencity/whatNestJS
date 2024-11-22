@@ -7,6 +7,9 @@ async function bootstrap() {
 
   app.useGlobalPipes(new ValidationPipe({
     transform: true,
+    transformOptions: {
+      enableImplicitConversion: true
+    },
   }));
   // 앱 전체에 파이프를넣고 validation 어노테이션을 실행시키게 해준다.
 
