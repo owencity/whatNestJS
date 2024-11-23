@@ -23,7 +23,6 @@ import { Exclude, Expose } from "class-transformer";
 
 @Entity()
 export class UsersModel extends BaseModel{
-
     @Column({
         // 1 길이
         length : 20,
