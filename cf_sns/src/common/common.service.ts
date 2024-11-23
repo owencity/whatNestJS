@@ -2,8 +2,9 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { BasePaginationDto } from './dto/base-pagination.dto';
 import { FindManyOptions, FindOptionsOrder, FindOptionsWhere, Repository } from 'typeorm';
 import { BaseModel } from './entity/base.entity';
-import { of } from 'rxjs';
+import { last, of } from 'rxjs';
 import { FILTER_MAPPER } from 'src/auth/const/filter-mapper.const';
+import { HOST, PROTOCOL } from './env.const';
 
 @Injectable()
 export class CommonService {
@@ -32,7 +33,17 @@ export class CommonService {
         Repository: Repository<T>,
         overrideFindOptions: FindManyOptions<T> = {},
     ) {
+        const findOptions = this.composeFindOptions<T>(dto);
 
+        const [data, count] = await Repository.findAndCount({
+            ...findOptions,
+            ...overrideFindOptions,
+        });
+
+        return {
+            data,
+            total: count,
+        }
     }
     
     private async cursorPaginate<T extends BaseModel> 
@@ -48,6 +59,48 @@ export class CommonService {
             where_title_ilike
         */
        const findOptions = this.composeFindOptions<T>(dto);
+
+       const results = await Repository.find({
+        ...findOptions,
+        ...overrideFindOptions,
+       });
+       const lastItem =  results.length > 0 && results.length === dto.take ? results[results.length - 1] : null;
+      
+       const nextUrl = lastItem && new URL(`${PROTOCOL}://${HOST}/${path}`);
+ 
+       if(nextUrl) {
+         /* 
+           dto의 키값들을 루핑하면서 키값에 해당하는 벨류가 존재하면 param에 그대로 붙여넣는다.
+           단 , where__id_more_than 값만 lastItem의 마지막 값으로 넣어준다.
+         */
+ 
+         for(const key of Object.keys(dto)) {
+           if(dto[key]) {
+             if(key !== 'where__id__more_than' && key !== 'where__id__less_than'){
+               nextUrl.searchParams.append(key, dto[key]);
+             }
+           }
+         }
+ 
+         let key = null;
+ 
+         if(dto.order__createdAt === 'ASC') {
+           key = 'where__id__more_than';
+         } else {
+           key = 'where__id__less_than';
+         }
+ 
+         nextUrl.searchParams.append(key , lastItem.id.toString());
+       }
+
+       return {
+        data: results,
+        cursor: {
+            after: lastItem?.id ?? null,
+        },
+        count: results.length,
+        next: nextUrl?.toString() ?? null,
+       }
     }
 
     private composeFindOptions<T extends BaseModel> (
@@ -162,18 +215,21 @@ export class CommonService {
         
         // where_id_between = 3, 4
         // 만약에 split 대상 문자가 존재하지 않으면 무조건 길이가 1이다.
-        const values = value.toString().split(',');
+        // const values = value.toString().split(',');
 
         // field -> id
         // operator -> more_than
         // FILTER_MAPPER[operator] -> MoreThan
+        if(operator === 'i_like'){
+            options[field] = FILTER_MAPPER[operator](`%${value}%`);
+        }else
         options[field] = FILTER_MAPPER[operator][value];
 
-        if(operator === 'between') {
-            options[field] = FILTER_MAPPER[operator](values[0], values[1]);
-        }else {
-            options[field] = FILTER_MAPPER[operator](value);
-        }
+        // if(operator === 'between') {
+        //     options[field] = FILTER_MAPPER[operator](values[0], values[1]);
+        // }else {
+        //     options[field] = FILTER_MAPPER[operator](value);
+        // }
 
         }
 

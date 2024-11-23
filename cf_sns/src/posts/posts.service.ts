@@ -9,6 +9,7 @@ import { PaginatePostDto } from './dto/paginte-post.dto';
 import { AccessTokenGuard } from 'src/auth/guard/bearer-token.guard';
 import { User } from 'src/users/decorator/user.decorator';
 import { HOST, PROTOCOL } from 'src/common/env.const';
+import { CommonService } from 'src/common/common.service';
 
 export interface PostModel {
     id: number;
@@ -51,7 +52,8 @@ export interface PostModel {
 export class PostsService {
     constructor(
       @InjectRepository(PostsModel)
-      private readonly postsRepository: Repository<PostsModel>
+      private readonly postsRepository: Repository<PostsModel>,
+      private readonly commonService: CommonService,
     ) {
       
     }
@@ -75,13 +77,21 @@ export class PostsService {
 
     // 오름차순으로 정렬하는 pagination만 구현한다.
     async paginatePosts(dto: PaginatePostDto) {
-
-     if(dto.page) {
-      return this.pagePaginatePosts(dto);
-     } else {
-      return this.cursorPaginatePosts(dto);
+    
+      return this.commonService.paginate(
+        dto,
+        this.postsRepository,
+        {
+          relations: ['author']
+        },
+        'posts'
+      );
+    //  if(dto.page) {
+    //   return this.pagePaginatePosts(dto);
+    //  } else {
+    //   return this.cursorPaginatePosts(dto);
+    //  }
      }
-    }
 
 
     async cursorPaginatePosts(dto: PaginatePostDto) {
