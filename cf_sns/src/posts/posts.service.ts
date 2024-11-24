@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, Post, UseGuards } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException, Post, UseGuards } from '@nestjs/common';
 import { FindOptionsWhere, LessThan, MoreThan, Repository } from 'typeorm';
 import { PostsModel } from './entities/posts.entity';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -11,6 +11,10 @@ import { User } from 'src/users/decorator/user.decorator';
 import { CommonService } from 'src/common/common.service';
 import { ConfigService } from '@nestjs/config';
 import { ENV_HASH_ROUNDS_KEY, ENV_HOST_KEY, ENV_PROTOCOL_KEY } from 'src/common/const/env-keys.const';
+import { join } from 'path';
+import { PUBLIC_FOLDER_PATH } from 'src/common/const/path.const';
+import {promises} from 'fs';
+
 
 export interface PostModel {
     id: number;
@@ -210,8 +214,24 @@ export class PostsService {
           return post;
       }
 
+      async createPostImage(dto: CreatePostDto) {
+        // dto의 이미지 이름을 기반으로 파일의 경로를 생성한다
+        const tempFilePath = join(
+          PUBLIC_FOLDER_PATH,
+          dto.image,
+        );
 
-    async createPost(authorId: number, postDto: CreatePostDto, image?: string) {
+        try {
+          // async -> Promise를 반환하는 함수
+          // fs.promises 내의 함수는 모두 Promise를 반환하며, 이를 await 키워드와 함꼐 사용할수 있습니다. (Promise 기반 비동기 API)
+          await promises.access(tempFilePath);  // 파일이 존재하는지 확인, 존재하지않으면 에러를 던진다. 
+        } catch (e) {
+          throw new BadRequestException('존재하지 않는 파일 입니다. ');
+        }
+      }
+
+
+    async createPost(authorId: number, postDto: CreatePostDto, ) {
       // title: string, content: 
       
       // 1) create -> 저장할 객체를 생성 
@@ -222,7 +242,6 @@ export class PostsService {
           id: authorId,
         },
         ...postDto,
-        image,
         // title,
         // content,
         likeCount:0,
