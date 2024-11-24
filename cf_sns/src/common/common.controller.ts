@@ -19,7 +19,7 @@ export class CommonController {
     @UploadedFile() file: Express.Multer.File,
   ) {
     return {
-      filename: file.filename
+      filename: file.filename, 
     }
   }
 

@@ -13,6 +13,8 @@ import { ConfigModule } from '@nestjs/config';
 import { ENV_DB_DATABASE_KEY, ENV_DB_HOST_KEY, ENV_DB_PASSWORD_KEY, ENV_DB_PORT_KEy, ENV_DB_USERNAME_KEY } from './common/const/env-keys.const';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { PUBLIC_FOLDER_PATH } from './common/const/path.const';
+import { ImageModel } from './common/entity/image.entity';
+
 
 @Module({
   imports: [PostsModule,
@@ -36,6 +38,7 @@ import { PUBLIC_FOLDER_PATH } from './common/const/path.const';
       entities: [
         PostsModel,
         UsersModel,
+        ImageModel,
       ],
       synchronize: true,
       // synchronize 를 true로 할시 TypeORM 은 엔티티와 테이블 구조를 자동으로 동기화 한다.

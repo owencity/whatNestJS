@@ -8,6 +8,7 @@ import { UpdatePostDto } from './dto/update-post.dto';
 import { query } from 'express';
 import { PaginatePostDto } from './dto/paginte-post.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { ImageModelType } from 'src/common/entity/image.entity';
 
 /*
     author: string;
@@ -48,17 +49,43 @@ export class PostsController {
   }
   // 3) Post /posts
   // POST를 생성한다.
+
+  /* 
+    Transaction 
+    POST API -> A모델을 저장하고 ,B 모델을 저장한다.
+    await repository.save(a);
+    await repository.save(b); 
+    만약 a를 저장하다가 실패하면 b를 저장하면 안될경우
+
+    all or nothing (모두 저장되던가 아니면 실패되면 이전상태로 되돌리거나) 
+    transaction의 세가지 기능
+    start -> 시작 
+    commit -> 저장 (쌓아뒀다가 한번에 저장)
+    rollback -> 원상복구  
+  */
   @Post()
   @UseGuards(AccessTokenGuard)
-  postPosts(
+  async postPosts(
     @User('id') userId: number, 
     @Body() body: CreatePostDto,
     // @Body('title') title:string,
     // @Body('content') content:string,
   ){
-    return this.postsService.createPost(
-      userId, body
-    )
+
+    const post = await this.postsService.createPost(
+      userId, body,
+    );
+
+    for(let i = 0; i < body.images.length; i++) {
+      await this.postsService.createPostImage({
+        post,
+        order : i,
+        path: body.images[i],
+        type: ImageModelType.POST_IMAGE,
+      });
+    }
+    
+    return this.postsService.getPostById(post.id);
   }
 
   // 4) PUT /posts/:id

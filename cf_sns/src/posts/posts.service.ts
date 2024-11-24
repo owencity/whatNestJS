@@ -11,9 +11,12 @@ import { User } from 'src/users/decorator/user.decorator';
 import { CommonService } from 'src/common/common.service';
 import { ConfigService } from '@nestjs/config';
 import { ENV_HASH_ROUNDS_KEY, ENV_HOST_KEY, ENV_PROTOCOL_KEY } from 'src/common/const/env-keys.const';
-import { join } from 'path';
-import { PUBLIC_FOLDER_PATH } from 'src/common/const/path.const';
+import { basename, join } from 'path';
+import { POST_IMAGE_PATH, PUBLIC_FOLDER_PATH, TEMP_FOLDER_PATH } from 'src/common/const/path.const';
 import {promises} from 'fs';
+import { CreatePostImageDto } from './image/dto/create-image.dto';
+import { ImageModel } from 'src/common/entity/image.entity';
+import { DEFAULT_POST_FIND_OPTIONS } from './const/default-post-find-options.const';
 
 
 export interface PostModel {
@@ -59,6 +62,8 @@ export class PostsService {
     constructor(
       @InjectRepository(PostsModel)
       private readonly postsRepository: Repository<PostsModel>,
+      @InjectRepository(ImageModel)
+      private readonly ImageRepository: Repository<ImageModel>,
       private readonly commonService: CommonService,
       private readonly configService: ConfigService,
     ) {
@@ -66,7 +71,7 @@ export class PostsService {
     }
     async getAllPosts() {
         return this.postsRepository.find({
-         relations:['author']
+         ...DEFAULT_POST_FIND_OPTIONS,
         });
     }
 
@@ -77,6 +82,7 @@ export class PostsService {
         await this.createPost(userId, {
           title: `임의로 생성된 포스트 제목 ${i}`,
           content: `임의로 생성된 포스트 내용 ${i}`,
+          images: [],
         });
       }
     }
@@ -89,7 +95,7 @@ export class PostsService {
         dto,
         this.postsRepository,
         {
-          relations: ['author'] 
+          ...DEFAULT_POST_FIND_OPTIONS,
         },
         'posts'
       );
@@ -201,10 +207,11 @@ export class PostsService {
           // Promise는 비동기 작업이 완료될 때까지 상태를 유지하는 객체
           // await 사용안하면 post는 실제 데이터가아닌 Promise 객체를 가리킨다. Promise는 null 이나 undefined가 아니기 때문에 if문이 작동하지않는다.
           // 흔히 하는 실수 유의할것
-            where: {
+          ...DEFAULT_POST_FIND_OPTIONS,
+          where: {
               id, // id:id -> 키값과 value 가같으면 생략 가능
             },
-          
+            
           });
           
           if(!post) {
@@ -214,11 +221,11 @@ export class PostsService {
           return post;
       }
 
-      async createPostImage(dto: CreatePostDto) {
+      async createPostImage(dto: CreatePostImageDto) {
         // dto의 이미지 이름을 기반으로 파일의 경로를 생성한다
         const tempFilePath = join(
-          PUBLIC_FOLDER_PATH,
-          dto.image,
+          TEMP_FOLDER_PATH,
+          dto.path,
         );
 
         try {
@@ -228,6 +235,26 @@ export class PostsService {
         } catch (e) {
           throw new BadRequestException('존재하지 않는 파일 입니다. ');
         }
+
+        // 파일 이름만 가져오기 
+        const fileName = basename(tempFilePath); // 파일이름만 추출. 
+
+        // 새로 이동할 포스트 폴더의 경로 + 이미지 이름
+        const newPath = join(
+          POST_IMAGE_PATH,
+          fileName,
+        );
+        // save
+        const result = await this.ImageRepository.save({
+          ...dto,
+        })
+
+        // 파일 옮기기
+        await promises.rename(tempFilePath, newPath);
+
+        
+
+        return result;
       }
 
 
@@ -242,6 +269,7 @@ export class PostsService {
           id: authorId,
         },
         ...postDto,
+        images: [],
         // title,
         // content,
         likeCount:0,
@@ -253,12 +281,13 @@ export class PostsService {
     }
 
     async updatePost(postId: number, postDto : UpdatePostDto) {
-
+      
       const {title, content} = postDto;
       // save의 기능
       // 1 만약에 데이터가 존재하지 않는다면 (id기준으로) 새로 생성한다. 
       // 2 만약에 데이터가 존재한다면 (같은 id의 값이 존재한다면) 존재하던 값을 업데이트한다.
       const post = await this.postsRepository.findOne({
+        ...DEFAULT_POST_FIND_OPTIONS,
         where:{
           id:postId,
         }

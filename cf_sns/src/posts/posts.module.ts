@@ -6,12 +6,14 @@ import { PostsModel } from './entities/posts.entity';
 import { AuthModule } from 'src/auth/auth.module';
 import { UsersModule } from 'src/users/users.module';
 import { CommonModule } from 'src/common/common.module';
+import { ImageModel } from 'src/common/entity/image.entity';
 // v4버전 가장많이 사용함
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([
       PostsModel,
+      ImageModel,
     ]),
     AuthModule,
     UsersModule,

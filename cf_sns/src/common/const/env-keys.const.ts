@@ -19,7 +19,7 @@ export const ENV_DB_PORT_KEy = 'DB_PORT';
 // 데이터 베이스 사용자 이름  -> postgres
 export const ENV_DB_USERNAME_KEY = 'DB_USERNAME';
 
-// 데이터베이스 사숑자 비밀번호 postgres
+// 데이터베이스 사용자 비밀번호 postgres
 export const ENV_DB_PASSWORD_KEY = 'DB_PASSWORD';
 
 export const ENV_DB_DATABASE_KEY = 'DB_DATABASE';

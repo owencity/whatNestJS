@@ -12,6 +12,7 @@ export class CommonService {
 
     constructor (
         private readonly configService: ConfigService,
+        
     ) {}
 
     paginate<T extends BaseModel>( // 조금 더 자세한 타입
