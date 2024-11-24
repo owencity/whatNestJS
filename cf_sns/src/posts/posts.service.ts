@@ -210,7 +210,8 @@ export class PostsService {
           return post;
       }
 
-    async createPost(authorId: number, postDto: CreatePostDto) {
+
+    async createPost(authorId: number, postDto: CreatePostDto, image?: string) {
       // title: string, content: 
       
       // 1) create -> 저장할 객체를 생성 
@@ -221,6 +222,7 @@ export class PostsService {
           id: authorId,
         },
         ...postDto,
+        image,
         // title,
         // content,
         likeCount:0,

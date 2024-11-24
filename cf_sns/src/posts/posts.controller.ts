@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, Put, Query, Request, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, Put, Query, Request, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
 import { PostsService } from './posts.service';
 import { AccessTokenGuard } from 'src/auth/guard/bearer-token.guard';
 import { UsersModel } from 'src/users/entities/users.entity';
@@ -7,6 +7,7 @@ import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { query } from 'express';
 import { PaginatePostDto } from './dto/paginte-post.dto';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 /*
     author: string;
@@ -49,14 +50,16 @@ export class PostsController {
   // POST를 생성한다.
   @Post()
   @UseGuards(AccessTokenGuard)
+  @UseInterceptors(FileInterceptor('image'))
   postPosts(
     @User('id') userId: number, 
     @Body() body: CreatePostDto,
+    @UploadedFile() file?: Express.Multer.File,
     // @Body('title') title:string,
     // @Body('content') content:string,
   ){
     return this.postsService.createPost(
-      userId, body,
+      userId, body, file?.filename,
     )
   }
 
