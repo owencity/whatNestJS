@@ -8,8 +8,9 @@ import { UpdatePostDto } from './dto/update-post.dto';
 import { PaginatePostDto } from './dto/paginte-post.dto';
 import { AccessTokenGuard } from 'src/auth/guard/bearer-token.guard';
 import { User } from 'src/users/decorator/user.decorator';
-import { HOST, PROTOCOL } from 'src/common/env.const';
 import { CommonService } from 'src/common/common.service';
+import { ConfigService } from '@nestjs/config';
+import { ENV_HASH_ROUNDS_KEY, ENV_HOST_KEY, ENV_PROTOCOL_KEY } from 'src/common/const/env-keys.const';
 
 export interface PostModel {
     id: number;
@@ -50,10 +51,12 @@ export interface PostModel {
 
 @Injectable()
 export class PostsService {
+
     constructor(
       @InjectRepository(PostsModel)
       private readonly postsRepository: Repository<PostsModel>,
       private readonly commonService: CommonService,
+      private readonly configService: ConfigService,
     ) {
       
     }
@@ -82,7 +85,7 @@ export class PostsService {
         dto,
         this.postsRepository,
         {
-          relations: ['author']
+          relations: ['author'] 
         },
         'posts'
       );
@@ -121,7 +124,10 @@ export class PostsService {
       // 아니면 null을 반환한다.
       const lastItem =  posts.length > 0 && posts.length === dto.take ? posts[posts.length - 1] : null;
       
-      const nextUrl = lastItem && new URL(`${PROTOCOL}://${HOST}/posts`);
+      const protocol = this.configService.get<string>(ENV_PROTOCOL_KEY);
+      const host = this.configService.get<string>(ENV_HOST_KEY);
+
+      const nextUrl = lastItem && new URL(`${protocol}://${host}/posts`);
 
       if(nextUrl) {
         /* 
