@@ -7,6 +7,7 @@ import { AuthModule } from 'src/auth/auth.module';
 import { UsersModule } from 'src/users/users.module';
 import { CommonModule } from 'src/common/common.module';
 import { ImageModel } from 'src/common/entity/image.entity';
+import { PostsImageService } from './image/images.service';
 // v4버전 가장많이 사용함
 
 @Module({
@@ -20,6 +21,6 @@ import { ImageModel } from 'src/common/entity/image.entity';
     CommonModule,
   ],
   controllers: [PostsController],
-  providers: [PostsService],
+  providers: [PostsService, PostsImageService],
 })
 export class PostsModule {}

@@ -9,6 +9,8 @@ import { query } from 'express';
 import { PaginatePostDto } from './dto/paginte-post.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ImageModelType } from 'src/common/entity/image.entity';
+import { DataSource } from 'typeorm';
+import { PostsImageService } from './image/images.service';
 
 /*
     author: string;
@@ -20,7 +22,11 @@ import { ImageModelType } from 'src/common/entity/image.entity';
 
 @Controller('posts')
 export class PostsController {
-  constructor(private readonly postsService: PostsService) {}
+  constructor(
+    private readonly postsService: PostsService,
+    private readonly dataSource: DataSource,
+    private readonly postsImageService: PostsImageService
+  ) {}
 
   // 1) Get /posts
   // 모든 post를 다 가져온다.
@@ -71,21 +77,40 @@ export class PostsController {
     // @Body('title') title:string,
     // @Body('content') content:string,
   ){
+      // 트랜잭션과 관련된 모든 쿼리를 담당할 쿼리 러너를 생성한다. 
+      const qr = this.dataSource.createQueryRunner();
+      // 쿼리 러너에 연결한다.
+      await qr.connect();
+      // 쿼리 러너에서 트랜잭션을 시작한다.
+      // 이 시점부터 같은 쿼리 러너를 사용하면
+      // 트랜잭션 안에서 데이터베이스 액션을 실행 할 수 있다.
+      await qr.startTransaction();
 
-    const post = await this.postsService.createPost(
-      userId, body,
-    );
-
-    for(let i = 0; i < body.images.length; i++) {
-      await this.postsService.createPostImage({
-        post,
-        order : i,
-        path: body.images[i],
-        type: ImageModelType.POST_IMAGE,
-      });
-    }
+      // 로직 실행
+      try {
+        const post = await this.postsService.createPost(
+          userId, body, qr,
+        );
     
-    return this.postsService.getPostById(post.id);
+        for(let i = 0; i < body.images.length; i++) {
+          await this.postsImageService.createPostImage({
+            post,
+            order : i,
+            path: body.images[i],
+            type: ImageModelType.POST_IMAGE,
+          }, qr);
+        }
+        await qr.commitTransaction();
+        await qr.release();
+
+        return this.postsService.getPostById(post.id);
+      } catch (e) {
+        // 어떤 에러든 에러가 던져지면 트랜잭션을 종료하고 원래 상태로 되돌린다.
+        await qr.rollbackTransaction();
+        await qr.release();
+      }
+      // 
+    
   }
 
   // 4) PUT /posts/:id
