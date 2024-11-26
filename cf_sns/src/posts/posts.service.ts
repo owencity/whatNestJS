@@ -200,10 +200,12 @@ export class PostsService {
         }
       }
 
-      async getPostById(id: number) {
+      async getPostById(id: number, qr?: QueryRunner) {
+        
+        const repository = this.getRepository(qr);
           // const post = posts.find((post) => post.id === +id); // + -> 암묵적인 자바스크립트의 형변환 , +는 숫자가아닌 경우 숫자로 변환하려고 시도
           // 문자열이 변환가능한 숫자인경우 변환, 아닌경우 NaN의 결과를 냄 number(id) 와 같은 기능을한다.
-        const post =  await this.postsRepository.findOne({  // await 를 하지않으면 에러가 잡히지않는다. promise로 반환하니 null이 아니다.
+        const post =  await repository.findOne({  // await 를 하지않으면 에러가 잡히지않는다. promise로 반환하니 null이 아니다.
           // Promise는 비동기 작업이 완료될 때까지 상태를 유지하는 객체
           // await 사용안하면 post는 실제 데이터가아닌 Promise 객체를 가리킨다. Promise는 null 이나 undefined가 아니기 때문에 if문이 작동하지않는다.
           // 흔히 하는 실수 유의할것
