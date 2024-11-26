@@ -14,6 +14,7 @@ import { ENV_DB_DATABASE_KEY, ENV_DB_HOST_KEY, ENV_DB_PASSWORD_KEY, ENV_DB_PORT_
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { PUBLIC_FOLDER_PATH } from './common/const/path.const';
 import { ImageModel } from './common/entity/image.entity';
+import { ChatsModule } from './chats/chats.module';
 
 
 @Module({
@@ -48,6 +49,7 @@ import { ImageModel } from './common/entity/image.entity';
     UsersModule,
     AuthModule,
     CommonModule,
+    ChatsModule,
   ],
   controllers: [AppController],
   providers: [AppService, {
