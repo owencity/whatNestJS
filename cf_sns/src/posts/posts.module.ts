@@ -29,7 +29,7 @@ export class PostsModule implements NestModule {
     consumer.apply(
       LogMiddleware,
     ).forRoutes({
-      path: 'posts',
+      path: 'posts*',
       method: RequestMethod.GET
     })
   }

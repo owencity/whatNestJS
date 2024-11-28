@@ -10,7 +10,7 @@
     role: [RolesEnum.USER, RolesEnum.ADMIN]
 */
 
-import { Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { Column, CreateDateColumn, Entity, JoinTable, ManyToMany, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { RolesEnum } from "./const/rolse.const";
 import { PostModel } from "src/posts/posts.service";
 import { PostsModel } from "src/posts/entities/posts.entity";
@@ -20,6 +20,8 @@ import { lengthValidationMessage } from "src/common/validation-message/length-va
 import { stringValidationMessage } from "src/common/validation-message/string-validation.message";
 import { emailValidationMessage } from "src/common/validation-message/email-validation.message";
 import { Exclude, Expose } from "class-transformer";
+import { ChatsModel } from "src/chats/entity/chats.entity";
+import { MessagesModel } from "src/chats/messages/entity/messages.entity";
 
 @Entity()
 export class UsersModel extends BaseModel{
@@ -77,6 +79,7 @@ export class UsersModel extends BaseModel{
     */
     @Exclude({
         toPlainOnly: true,
+        toClassOnly: true,
     })
     password : string;
 
@@ -89,4 +92,10 @@ export class UsersModel extends BaseModel{
     @OneToMany(() => PostsModel, (post) => post.author)
     posts: PostModel[];
 
+    @ManyToMany(() => ChatsModel, (chat) => chat.users) 
+    @JoinTable()
+    chats: ChatsModel[]
+
+    @OneToMany(() => MessagesModel, (message) => message.author)
+    messages: MessagesModel;
 }

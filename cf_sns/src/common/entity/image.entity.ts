@@ -33,7 +33,8 @@ export class ImageModel extends BaseModel {
     @IsString()
     @Transform(({value, obj}) => { 
         if(obj.type === ImageModelType.POST_IMAGE ) {
-            return `/${join(
+            return `/${join( // join 운영체제마다 표현하는게 다르다. 윈도우의 경로구분자는 백슬래쉬 맥의 경로 구분자는 슬래쉬 이다. 
+                // string 으로 표현할시 윈도우에서는 \\ 두번쓰게 된다. 
                 POST_PUBLIC_IMAGE_PATH,
                 value)}`
         } else {

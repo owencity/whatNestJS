@@ -10,7 +10,6 @@
     "sourceMap": true,
     "outDir": "./dist",
     "baseUrl": "./",
-    "types": ["node", "cookie"],
     "incremental": true,
     "skipLibCheck": true,
     "strictNullChecks": false,

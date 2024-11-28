@@ -15,6 +15,9 @@ import { ServeStaticModule } from '@nestjs/serve-static';
 import { PUBLIC_FOLDER_PATH } from './common/const/path.const';
 import { ImageModel } from './common/entity/image.entity';
 import { ChatsModule } from './chats/chats.module';
+import { ChatsModel } from './chats/entity/chats.entity';
+import { MessagesModel } from './chats/messages/entity/messages.entity';
+import { CommentsModule } from './comments/comments.module';
 
 
 @Module({
@@ -40,6 +43,8 @@ import { ChatsModule } from './chats/chats.module';
         PostsModel,
         UsersModel,
         ImageModel,
+        ChatsModel,
+        MessagesModel,
       ],
       synchronize: true,
       // synchronize 를 true로 할시 TypeORM 은 엔티티와 테이블 구조를 자동으로 동기화 한다.
@@ -50,6 +55,7 @@ import { ChatsModule } from './chats/chats.module';
     AuthModule,
     CommonModule,
     ChatsModule,
+    CommentsModule,
   ],
   controllers: [AppController],
   providers: [AppService, {
