@@ -1,6 +1,8 @@
+import { IsNumber, IsString } from "class-validator";
 import { BaseModel } from "src/common/entity/base.entity";
 import { PostsModel } from "src/posts/entities/posts.entity";
-import { Column, CreateDateColumn, Entity, ManyToMany, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { UsersModel } from "src/users/entities/users.entity";
+import { Column, Entity,  ManyToOne} from "typeorm";
 
 @Entity()
 export class CommentsModel extends BaseModel{
@@ -14,16 +16,20 @@ export class CommentsModel extends BaseModel{
     */
     // 작성자-> 
     
-    @Column()
-    author : string;
-
-    @Column()
-    post : string;
+    @ManyToOne(() => UsersModel, (user) => user.postComments)
+    author : UsersModel;
 
     @ManyToOne(() => PostsModel, (post) => post.comments)
-    comments : PostsModel; 
-    
+    post : PostsModel;
+
     @Column()
+    @IsString()
+    comment: string;
+
+    @Column({
+        default: 0,
+    })
+    @IsNumber()
     likeCount: number;
 
     

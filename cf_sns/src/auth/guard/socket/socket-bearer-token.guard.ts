@@ -11,7 +11,7 @@ export class SocketBearerTokenGuard implements CanActivate {
         private readonly userService: UsersService,
     ) {}
 
-    async canActivate(context: ExecutionContext): Promise<boolean> {
+    async canActivate(context: ExecutionContext):   Promise<boolean> {
         const socket = context.switchToWs().getClient();
 
         const headers = socket.handshake.headers;

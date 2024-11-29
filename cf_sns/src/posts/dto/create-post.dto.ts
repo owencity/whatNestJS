@@ -22,3 +22,11 @@ export class CreatePostDto extends PickType(PostsModel, ['title', 'content']) {
 
     // title: string;
     // content: string;
+/* 
+    spread  연산자 가능한이유 
+    string[]배열로 타입을 지정
+
+    부모와 자식 관계 
+    부모 클래스는 단순히 자식 클래스에 일부 속성과 메서드를 제공하는 역할
+    자식 클래스에서 새로운 속성을 추가하거나 상속받은 속성을 조합해서 사용가능
+*/

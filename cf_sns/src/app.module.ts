@@ -17,7 +17,8 @@ import { ImageModel } from './common/entity/image.entity';
 import { ChatsModule } from './chats/chats.module';
 import { ChatsModel } from './chats/entity/chats.entity';
 import { MessagesModel } from './chats/messages/entity/messages.entity';
-import { CommentsModule } from './comments/comments.module';
+import { CommentsModule } from './posts/comments/comments.module';
+import { CommentsModel } from './posts/comments/entity/comments.entity';
 
 
 @Module({
@@ -45,6 +46,7 @@ import { CommentsModule } from './comments/comments.module';
         ImageModel,
         ChatsModel,
         MessagesModel,
+        CommentsModel,
       ],
       synchronize: true,
       // synchronize 를 true로 할시 TypeORM 은 엔티티와 테이블 구조를 자동으로 동기화 한다.

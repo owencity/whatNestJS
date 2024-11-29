@@ -201,7 +201,13 @@ export class PostsService {
       }
 
       async getPostById(id: number, qr?: QueryRunner) {
-        
+        /* 
+          QueryRunner 쓰는 이유?
+          1. 트랜잭션의 시작, 커밋 , 롤백 직접 제어가능
+          2. SQL문 직접 작성 가능(복잡한 쿼리위해)
+          3. 같은 트랜잭션 내 여러 레포지토리 작업
+          4. DB연결 제어, 특정 DB 연결 유지해야하는 컨텍스트에서 사용
+        */
         const repository = this.getRepository(qr);
           // const post = posts.find((post) => post.id === +id); // + -> 암묵적인 자바스크립트의 형변환 , +는 숫자가아닌 경우 숫자로 변환하려고 시도
           // 문자열이 변환가능한 숫자인경우 변환, 아닌경우 NaN의 결과를 냄 number(id) 와 같은 기능을한다.
@@ -213,7 +219,6 @@ export class PostsService {
           where: {
               id, // id:id -> 키값과 value 가같으면 생략 가능
             },
-            
           });
           
           if(!post) {

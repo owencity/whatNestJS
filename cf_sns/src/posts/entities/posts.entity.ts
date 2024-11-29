@@ -51,6 +51,12 @@ export class PostsModel extends BaseModel {
     @OneToMany((type) => ImageModel, (image) => image.post) 
     images: ImageModel[];
 
-    @OneToMany(() => CommentsModel, (comment) => comment.post)
-    post: CommentsModel[]
+
+    // // 댓글내용과 OneToMany , 일단 보류
+    // @OneToMany(() => CommentsModel, (comment) => comment.post)
+    // comments: CommentsModel[]
+
+    // 작성자와 OneToMany
+    @OneToMany(() => CommentsModel, (comment) => comment.author)
+    comments: CommentsModel[];
 }

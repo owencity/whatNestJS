@@ -22,6 +22,7 @@ import { emailValidationMessage } from "src/common/validation-message/email-vali
 import { Exclude, Expose } from "class-transformer";
 import { ChatsModel } from "src/chats/entity/chats.entity";
 import { MessagesModel } from "src/chats/messages/entity/messages.entity";
+import { CommentsModel } from "src/posts/comments/entity/comments.entity";
 
 @Entity()
 export class UsersModel extends BaseModel{
@@ -89,8 +90,8 @@ export class UsersModel extends BaseModel{
     })
     role: RolesEnum;
 
-    @OneToMany(() => PostsModel, (post) => post.author)
-    posts: PostModel[];
+    @OneToMany(() => CommentsModel, (comment) => comment.author)
+    postComments: CommentsModel;
 
     @ManyToMany(() => ChatsModel, (chat) => chat.users) 
     @JoinTable()
