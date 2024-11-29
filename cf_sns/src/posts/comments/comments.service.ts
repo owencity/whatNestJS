@@ -5,7 +5,9 @@ import { PostsService } from '../posts.service';
 import { QueryRunner, Repository } from 'typeorm';
 import { CreateCommentDto } from './dto/createCommentDto';
 import { NotFoundError } from 'rxjs';
-import { UpdateCommentDto } from './dto/update-comment.dto';
+import { CommonService } from 'src/common/common.service';
+import { PaginateChatDto } from 'src/chats/dto/paginate-chat.dto';
+import { PaginateCommentsDto } from './dto/paginate-comments.dto';
 
 @Injectable()
 export class CommentsService {
@@ -13,40 +15,60 @@ export class CommentsService {
     constructor(
     @InjectRepository(CommentsModel) 
     private readonly commentsRepository: Repository<CommentsModel>,
+    private readonly commonService: CommonService,
     ) {}
     
- 
-    // post별 댓글 조회 
-    async getCommentByPostId(id: number, qr: QueryRunner) {
-        const repository = this.getRepository(qr);
-        const commentPost = await repository.findOne({
-            where: {
-                id,
-            }
-        });
-
-        if(!commentPost) {
-            throw new NotFoundException();
-        }
-        return commentPost;        
-    }
-
-    getRepository(qr? : QueryRunner) {
-        return qr ? qr.manager.getRepository<CommentsModel>(CommentsModel) : this.commentsRepository;
-    }
-
-    // 댓글 작성(post에 댓글 작성 (속해야함))
-    async createComment(authorId: number, commentDto: CreateCommentDto, qr?: QueryRunner) {
-    
-        const repository = this.getRepository(qr);
-        const postComment = repository.create({
-            author: {
-                id : authorId,
+    paginateComments(
+        dto: PaginateCommentsDto,
+        postId: number,
+    ) { 
+        // 재사용 가능한코드를 많이만들것
+        return this.commonService.paginate(
+            dto,
+            this.commentsRepository,
+            {
+                where: {
+                    post: {
+                        id: postId,
+                    }
+                }
             },
-        ...commentDto, 
-        // ...spread 연산자 사용이유 -> commentDto 그냥 사용시 필드명 자체로 인식 , Dto 값 전체를 펼쳐서 엔티티에 mapping
-        likeCount: 0,
-        });
+            `posts/${postId}/comments`,
+        );
+    }
+
+}
+    // post별 댓글 조회 
+    // async getCommentByPostId(id: number, qr: QueryRunner) {
+    //     const repository = this.getRepository(qr);
+    //     const commentPost = await repository.findOne({
+    //         where: {
+    //             id,
+    //         }
+    //     });
+
+    //     if(!commentPost) {
+    //         throw new NotFoundException();
+    //     }
+    //     return commentPost;        
+    // }
+
+    // getRepository(qr? : QueryRunner) {
+    //     return qr ? qr.manager.getRepository<CommentsModel>(CommentsModel) : this.commentsRepository;
+    // }
+
+    // // 댓글 작성(post에 댓글 작성 (속해야함))
+    // async createComment(authorId: number, commentDto: CreateCommentDto, qr?: QueryRunner) {
+    
+    //     const repository = this.getRepository(qr);
+    //     const postComment = repository.create({
+    //         author: {
+    //             id : authorId,
+    //         },
+    //     ...commentDto, 
+    //     // ...spread 연산자 사용이유 -> commentDto 그냥 사용시 필드명 자체로 인식 , Dto 값 전체를 펼쳐서 엔티티에 mapping
+    //     likeCount: 0,
+    //     });
         /* 
             repository.create() 는  DeepPartial<T> 타입을 기본적으로 요구함,
             즉 , 엔티티의 일부 속성을 선택적으로 포함하는 객체를 전달해야함
@@ -62,46 +84,46 @@ export class CommentsService {
         
             */
 
-        const newPostComment = await repository.save(postComment);
-        return newPostComment;
-    }
+        // const newPostComment = await repository.save(postComment);
+        // return newPostComment;
+    // }
 
     // 댓글 수정 
-    async updateComment(commentId: number, postCommentDto: UpdateCommentDto ) {
-        const commentPost = postCommentDto.post;
-        const findCommentPost = await this.commentsRepository.findOne({
-            where: {
-                id: commentId
-            }
-        });
+    // async updateComment(commentId: number, postCommentDto: UpdateCommentDto ) {
+        // const commentPost = postCommentDto.post;
+        // const findCommentPost = await this.commentsRepository.findOne({
+        //     where: {
+        //         id: commentId
+        //     }
+        // });
 
-        if(!commentPost) {
-            throw new NotFoundException();
-        }
+        // if(!commentPost) {
+        //     throw new NotFoundException();
+        // }
 
-        if(commentPost) {
-            findCommentPost.post = commentPost;
-        }
+        // if(commentPost) {
+        //     findCommentPost.post = commentPost;
+        // }
 
-        const newCommentPost = await this.commentsRepository.save(findCommentPost);
-        return newCommentPost;
-    }
+        // const newCommentPost = await this.commentsRepository.save(findCommentPost);
+        // return newCommentPost;
+    // }
 
     // 댓글 삭제
-    async deleteComment(commentId : number) {
-        const postComment = await this.commentsRepository.findOne({
-            where:{ 
-                id: commentId,
-            }
-        });
+    // async deleteComment(commentId : number) {
+        // const postComment = await this.commentsRepository.findOne({
+        //     where:{ 
+        //         id: commentId,
+        //     }
+        // });
 
-        if(!postComment) {
-            throw new NotFoundException();
-        }
+        // if(!postComment) {
+        //     throw new NotFoundException();
+        // }
 
-        await this.commentsRepository.delete(commentId);
-        return commentId;
-    }
+        // await this.commentsRepository.delete(commentId);
+        // return commentId;
+    // }
 
     
 
@@ -124,4 +146,4 @@ export class CommentsService {
     
         */
 
-}
+// }

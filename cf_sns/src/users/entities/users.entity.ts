@@ -90,6 +90,9 @@ export class UsersModel extends BaseModel{
     })
     role: RolesEnum;
 
+    @OneToMany(() => PostsModel , (post) => post.author)
+    posts : PostsModel[];
+
     @OneToMany(() => CommentsModel, (comment) => comment.author)
     postComments: CommentsModel;
 

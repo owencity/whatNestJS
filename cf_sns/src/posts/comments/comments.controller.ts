@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, UseGuards, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, Query, UseGuards, UseInterceptors } from '@nestjs/common';
 import { CommentsService } from './comments.service';
 import { AccessTokenGuard } from 'src/auth/guard/bearer-token.guard';
 import { TransactionInterceptor } from 'src/common/interceptor/transaction.interceptor';
@@ -6,6 +6,7 @@ import { User } from 'src/users/decorator/user.decorator';
 import { CreateCommentDto } from './dto/createCommentDto';
 import { QueryRunner } from 'src/common/decorator/query-runner.decorator';
 import { QueryRunner as QR} from 'typeorm';
+import { PaginateCommentsDto } from './dto/paginate-comments.dto';
 
 @Controller('posts/:postId/comments')
 export class CommentsController {
@@ -32,8 +33,14 @@ export class CommentsController {
   }
 
   @Get()
-  getComments() {
-    
+  getComments(
+    @Param('postId', ParseIntPipe) postId: number, 
+    @Query() query: PaginateCommentsDto,
+  ) {
+    return this.commentsService.paginateComments(
+      query,
+      postId,
+    );
   }
 
   @Get()
@@ -41,27 +48,27 @@ export class CommentsController {
 
   }
   
-  @Post()
-  @UseGuards(AccessTokenGuard)
-  @UseInterceptors(TransactionInterceptor)
-  async postComment(
-    @Param() postId: number,
-    @Body() body: CreateCommentDto,
-    @QueryRunner() qr: QR,
-  ) {
-    const postComment = await this.commentsService.createComment(
-      postId, body, qr,
-    );
+  // @Post()
+  // @UseGuards(AccessTokenGuard)
+  // @UseInterceptors(TransactionInterceptor)
+  // async postComment(
+  //   @Param() postId: number,
+  //   @Body() body: CreateCommentDto,
+  //   @QueryRunner() qr: QR,
+  // ) {
+  //   const postComment = await this.commentsService.createComment(
+  //     postId, body, qr,
+  //   );
 
-    return this.commentsService.getCommentByPostId(postComment.id, qr);
-  }
+  //   return this.commentsService.getCommentByPostId(postComment.id, qr);
+  // }
 
-  @Patch()
-  updateComment() {
+  // @Patch()
+  // updateComment() {
 
-  }
-  @Delete()
-  deleteComment() {
+  // }
+  // @Delete()
+  // deleteComment() {
 
-  }
+  // }
 }
