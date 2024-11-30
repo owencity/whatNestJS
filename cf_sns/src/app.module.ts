@@ -20,6 +20,7 @@ import { MessagesModel } from './chats/messages/entity/messages.entity';
 import { CommentsModule } from './posts/comments/comments.module';
 import { CommentsModel } from './posts/comments/entity/comments.entity';
 import { RolesGuard } from './users/guard/roles.guard';
+import { AccessTokenGuard } from './auth/guard/bearer-token.guard';
 
 
 @Module({
@@ -67,9 +68,14 @@ import { RolesGuard } from './users/guard/roles.guard';
     useClass: ClassSerializerInterceptor,
   },
   {
+    provide: APP_GUARD,
+    useClass: AccessTokenGuard,
+  },
+  {
     provide: APP_GUARD, 
     useClass: RolesGuard,
-  }
+  } // app module 에 GUARD 등록시 제일먼저 실행되어 컨트롤러에있는 가드보다 먼저실행됨.
+  // accessToken 이 들어와야 유저정보를 알수있는데 위에가 먼저실행되어 user가 없다고 판단되어 exception 던짐
   ],
 })
 export class AppModule {}

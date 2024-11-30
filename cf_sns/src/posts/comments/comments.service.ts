@@ -184,4 +184,21 @@ export class CommentsService {
         */
 
 // }
+
+    async commentMine(
+        commentId: number,
+        userId : number
+    ) {
+        return this.commentsRepository.exists({
+            where: {
+                id:commentId,
+                author: {
+                    id: userId,
+                }
+            },
+            relations : {
+                author : true,
+            } 
+        });
+    }
     }

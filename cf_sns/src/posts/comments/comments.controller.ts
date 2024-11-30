@@ -9,6 +9,7 @@ import { QueryRunner as QR} from 'typeorm';
 import { PaginateCommentsDto } from './dto/paginate-comments.dto';
 import { UsersModel } from 'src/users/entities/users.entity';
 import { UpdateCommentsDto } from './dto/update-comments.dto';
+import { IsPublic } from 'src/common/decorator/is-public.decorator';
 
 @Controller('posts/:postId/comments')
 export class CommentsController {
@@ -35,6 +36,7 @@ export class CommentsController {
   }
 
   @Get()
+  @IsPublic()
   getComments(
     @Param('postId', ParseIntPipe) postId: number, 
     @Query() query: PaginateCommentsDto,
@@ -46,6 +48,7 @@ export class CommentsController {
   }
 
   @Get(':commentId')
+  @IsPublic()
   getComment(
     @Param('commentId', ParseIntPipe) commentId : number,
   ) {
@@ -55,7 +58,6 @@ export class CommentsController {
   
   
   @Post()
-  @UseGuards(AccessTokenGuard)
   // @UseInterceptors(TransactionInterceptor)
   async postComment(
     @Param('postId', ParseIntPipe) postId: number,
@@ -71,7 +73,6 @@ export class CommentsController {
   }
 
   @Patch(':commentId')
-  @UseGuards(AccessTokenGuard)
   async patchComment(
     @Param('commentId', ParseIntPipe) commentId: number, 
     @Body() body: UpdateCommentsDto
@@ -82,7 +83,6 @@ export class CommentsController {
    )
   }
   @Delete(':commentId')
-  @UseGuards(AccessTokenGuard)
   deleteComment(
     @Param('commentId', ParseIntPipe) commentId: number,
   ) {

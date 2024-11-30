@@ -5,18 +5,16 @@ import { UsersModel } from 'src/users/entities/users.entity';
 import { User } from 'src/users/decorator/user.decorator';
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
-import { query } from 'express';
 import { PaginatePostDto } from './dto/paginte-post.dto';
-import { FileInterceptor } from '@nestjs/platform-express';
 import { ImageModelType } from 'src/common/entity/image.entity';
 import { DataSource, QueryRunner as QR} from 'typeorm';
 import { PostsImageService } from './image/images.service';
-import { LogInterceptor } from 'src/common/interceptor/log.interceptor';
 import { TransactionInterceptor } from 'src/common/interceptor/transaction.interceptor';
 import { QueryRunner } from 'src/common/decorator/query-runner.decorator';
-import { HttpExceptionFilter } from 'src/common/exception-filter/http.exception-filter';
 import { RolesEnum } from 'src/users/entities/const/roles.const';
 import { Roles } from 'src/users/decorator/roles.decorator';
+import { IsPublic } from 'src/common/decorator/is-public.decorator';
+import { IsPostMineOrAdminGuard } from './guard/is-post-mine-or-admin.guard';
 
 /*
     author: string;
@@ -37,6 +35,7 @@ export class PostsController {
   // 1) Get /posts
   // 모든 post를 다 가져온다.
   @Get()
+  @IsPublic()
     // @UseInterceptors(LogInterceptor)
   // @UseFilters(HttpExceptionFilter)
   getPosts(
@@ -47,7 +46,6 @@ export class PostsController {
   }
 
   @Post('random')
-  @UseGuards(AccessTokenGuard)
   async postPostsRandom(@User() user: UsersModel) {
     await this.postsService.generatePosts(user.id);
     return true;
@@ -58,6 +56,7 @@ export class PostsController {
   // id에 해당되는 post를 가져온다.
   // 예를 들어서 id=1일 경우 id가 1인 포스트를 가져온다.
   @Get(':id')
+  @IsPublic()
   getPost(@Param('id', ParseIntPipe) id: number) { // URI에서 param값은 기본적으로 string 그래서 integer 로 변환하여 받음.
    return this.postsService.getPostById(id);
   }
@@ -78,7 +77,6 @@ export class PostsController {
     rollback -> 원상복구  
   */
   @Post()
-  @UseGuards(AccessTokenGuard)
   @UseInterceptors(TransactionInterceptor)
   async postPosts(
     @User('id') userId: number, 
@@ -119,9 +117,10 @@ export class PostsController {
   // put 과 patch 의 차이 
   // put 은 수정할 값이 전부 존재해야하고 해당 값이 존재한다면 수정한다, 존재하지 않으면 생성해라는 메서드
   // 부분적으로 입력하고 부분적으로 수정하는 메서드는 patch 를 사용한다.
-  @Patch(':id')
+  @Patch(':postId')
+  @UseGuards(IsPostMineOrAdminGuard)
   patchPost(
-    @Param('id', ParseIntPipe) id: number,
+    @Param('postId', ParseIntPipe) id: number,
     @Body() body: UpdatePostDto,
     // @Body('title') title?:string,
     // @Body('content') content?:string,
@@ -134,7 +133,6 @@ export class PostsController {
   // 5) Delete /posts/:id
 
   @Delete(':id')
-  @UseGuards(AccessTokenGuard)
   @Roles(RolesEnum.ADMIN) // reflect metadata 타입스크립트
   deletePost(
     @Param('id', ParseIntPipe) id: number,
