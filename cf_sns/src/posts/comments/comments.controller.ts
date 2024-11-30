@@ -3,10 +3,12 @@ import { CommentsService } from './comments.service';
 import { AccessTokenGuard } from 'src/auth/guard/bearer-token.guard';
 import { TransactionInterceptor } from 'src/common/interceptor/transaction.interceptor';
 import { User } from 'src/users/decorator/user.decorator';
-import { CreateCommentDto } from './dto/createCommentDto';
+import { CreateCommentsDto } from './dto/createCommentsDto';
 import { QueryRunner } from 'src/common/decorator/query-runner.decorator';
 import { QueryRunner as QR} from 'typeorm';
 import { PaginateCommentsDto } from './dto/paginate-comments.dto';
+import { UsersModel } from 'src/users/entities/users.entity';
+import { UpdateCommentsDto } from './dto/update-comments.dto';
 
 @Controller('posts/:postId/comments')
 export class CommentsController {
@@ -43,32 +45,48 @@ export class CommentsController {
     );
   }
 
-  @Get()
-  getCommentsById() {
-
+  @Get(':commentId')
+  getComment(
+    @Param('commentId', ParseIntPipe) commentId : number,
+  ) {
+    return this.commentsService.getCommentById(commentId);
   }
+
   
-  // @Post()
-  // @UseGuards(AccessTokenGuard)
+  
+  @Post()
+  @UseGuards(AccessTokenGuard)
   // @UseInterceptors(TransactionInterceptor)
-  // async postComment(
-  //   @Param() postId: number,
-  //   @Body() body: CreateCommentDto,
-  //   @QueryRunner() qr: QR,
-  // ) {
-  //   const postComment = await this.commentsService.createComment(
-  //     postId, body, qr,
-  //   );
+  async postComment(
+    @Param('postId', ParseIntPipe) postId: number,
+    @Body() body: CreateCommentsDto,
+    @User() user: UsersModel,
+    // @QueryRunner() qr: QR,
+  ) {
+    return this.commentsService.createComment(
+      body,
+      postId,
+      user,
+    );
+  }
 
-  //   return this.commentsService.getCommentByPostId(postComment.id, qr);
-  // }
-
-  // @Patch()
-  // updateComment() {
-
-  // }
-  // @Delete()
-  // deleteComment() {
-
-  // }
+  @Patch(':commentId')
+  @UseGuards(AccessTokenGuard)
+  async patchComment(
+    @Param('commentId', ParseIntPipe) commentId: number, 
+    @Body() body: UpdateCommentsDto
+  ) {
+   return this.commentsService.updateComment(
+    commentId,
+    body,
+   )
+  }
+  @Delete(':commentId')
+  @UseGuards(AccessTokenGuard)
+  deleteComment(
+    @Param('commentId', ParseIntPipe) commentId: number,
+  ) {
+    return this.commentsService.deleteComment(commentId);
+  }
 }
+

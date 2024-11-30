@@ -15,6 +15,8 @@ import { LogInterceptor } from 'src/common/interceptor/log.interceptor';
 import { TransactionInterceptor } from 'src/common/interceptor/transaction.interceptor';
 import { QueryRunner } from 'src/common/decorator/query-runner.decorator';
 import { HttpExceptionFilter } from 'src/common/exception-filter/http.exception-filter';
+import { RolesEnum } from 'src/users/entities/const/roles.const';
+import { Roles } from 'src/users/decorator/roles.decorator';
 
 /*
     author: string;
@@ -132,6 +134,8 @@ export class PostsController {
   // 5) Delete /posts/:id
 
   @Delete(':id')
+  @UseGuards(AccessTokenGuard)
+  @Roles(RolesEnum.ADMIN) // reflect metadata 타입스크립트
   deletePost(
     @Param('id', ParseIntPipe) id: number,
   ) {

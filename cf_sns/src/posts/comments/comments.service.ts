@@ -1,13 +1,17 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CommentsModel } from './entity/comments.entity';
 import { PostsService } from '../posts.service';
 import { QueryRunner, Repository } from 'typeorm';
-import { CreateCommentDto } from './dto/createCommentDto';
+import { CreateCommentsDto } from './dto/createCommentsDto';
 import { NotFoundError } from 'rxjs';
 import { CommonService } from 'src/common/common.service';
 import { PaginateChatDto } from 'src/chats/dto/paginate-chat.dto';
 import { PaginateCommentsDto } from './dto/paginate-comments.dto';
+import { UsersModel } from 'src/users/entities/users.entity';
+import { DEFAULT_COMMENT_FIND_OPTIONS } from './const/default-comment-find-options.const';
+import { UpdateCommentsDto } from './dto/update-comments.dto';
+import { doesNotMatch } from 'assert';
 
 @Injectable()
 export class CommentsService {
@@ -27,17 +31,31 @@ export class CommentsService {
             dto,
             this.commentsRepository,
             {
-                where: {
-                    post: {
-                        id: postId,
-                    }
-                }
+                ...DEFAULT_COMMENT_FIND_OPTIONS
             },
             `posts/${postId}/comments`,
         );
     }
 
-}
+   async getCommentById(
+        id: number,
+    ) {
+        const comment = await this.commentsRepository.findOne({
+            ...DEFAULT_COMMENT_FIND_OPTIONS,
+            where : {
+                id,
+            },
+        });
+
+        if(!comment) {
+            throw new BadRequestException(
+                `id: ${id} Comment는 존재하지 않습니다.`
+            )
+        }
+        return comment;
+    }
+
+
     // post별 댓글 조회 
     // async getCommentByPostId(id: number, qr: QueryRunner) {
     //     const repository = this.getRepository(qr);
@@ -57,18 +75,29 @@ export class CommentsService {
     //     return qr ? qr.manager.getRepository<CommentsModel>(CommentsModel) : this.commentsRepository;
     // }
 
-    // // 댓글 작성(post에 댓글 작성 (속해야함))
-    // async createComment(authorId: number, commentDto: CreateCommentDto, qr?: QueryRunner) {
-    
-    //     const repository = this.getRepository(qr);
-    //     const postComment = repository.create({
-    //         author: {
-    //             id : authorId,
-    //         },
-    //     ...commentDto, 
-    //     // ...spread 연산자 사용이유 -> commentDto 그냥 사용시 필드명 자체로 인식 , Dto 값 전체를 펼쳐서 엔티티에 mapping
-    //     likeCount: 0,
-    //     });
+    // 댓글 작성(post에 댓글 작성 (속해야함))
+    async createComment(
+        dto: CreateCommentsDto,
+        postId: number,
+        author: UsersModel,
+        ) {
+            return this.commentsRepository.save({
+                ...dto,
+                post:{
+                    id: postId
+                },
+                author,
+            });
+        }
+        // const repository = this.getRepository(qr);
+        // const postComment = repository.create({
+        //     author: {
+        //         id : authorId,
+        //     },
+        // ...commentDto, 
+        // // ...spread 연산자 사용이유 -> commentDto 그냥 사용시 필드명 자체로 인식 , Dto 값 전체를 펼쳐서 엔티티에 mapping
+        // likeCount: 0,
+        // });
         /* 
             repository.create() 는  DeepPartial<T> 타입을 기본적으로 요구함,
             즉 , 엔티티의 일부 속성을 선택적으로 포함하는 객체를 전달해야함
@@ -84,46 +113,54 @@ export class CommentsService {
         
             */
 
-        // const newPostComment = await repository.save(postComment);
-        // return newPostComment;
-    // }
 
     // 댓글 수정 
-    // async updateComment(commentId: number, postCommentDto: UpdateCommentDto ) {
-        // const commentPost = postCommentDto.post;
-        // const findCommentPost = await this.commentsRepository.findOne({
-        //     where: {
-        //         id: commentId
-        //     }
-        // });
+    async updateComment(
+        commentId: number,
+        dto: UpdateCommentsDto,
+     ) {
+        const comment = this.commentsRepository.findOne({
+            where : {
+                id:commentId,
+            }
+        });
 
-        // if(!commentPost) {
-        //     throw new NotFoundException();
-        // }
+        if(!comment) {
+            throw new BadRequestException(
+                '존재하지 않는 댓글입니다.'
+            )
+        }
 
-        // if(commentPost) {
-        //     findCommentPost.post = commentPost;
-        // }
+        const prevComment = await this.commentsRepository.preload({
+            id:commentId,
+            ...dto
+        });
 
-        // const newCommentPost = await this.commentsRepository.save(findCommentPost);
-        // return newCommentPost;
-    // }
+        const newComment = await this.commentsRepository.save(
+            prevComment,
+        );
 
-    // 댓글 삭제
-    // async deleteComment(commentId : number) {
-        // const postComment = await this.commentsRepository.findOne({
-        //     where:{ 
-        //         id: commentId,
-        //     }
-        // });
+        return newComment;
+    }
+    //댓글 삭제
+    async deleteComment(
+        id : number
+    ) {
+        const comment = this.commentsRepository.findOne({
+            where : {
+                id,
+            }
+        });
 
-        // if(!postComment) {
-        //     throw new NotFoundException();
-        // }
+        if(!comment) {
+            throw new BadRequestException(
+                '존재하지 않는 댓글입니다.'
+            )
+        }
 
-        // await this.commentsRepository.delete(commentId);
-        // return commentId;
-    // }
+        await this.commentsRepository.delete(id);
+        return id;
+    }
 
     
 
@@ -147,3 +184,4 @@ export class CommentsService {
         */
 
 // }
+    }

@@ -11,7 +11,7 @@
 */
 
 import { Column, CreateDateColumn, Entity, JoinTable, ManyToMany, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
-import { RolesEnum } from "./const/rolse.const";
+import { RolesEnum } from "./const/roles.const";
 import { PostModel } from "src/posts/posts.service";
 import { PostsModel } from "src/posts/entities/posts.entity";
 import { BaseModel } from "src/common/entity/base.entity";
