@@ -236,6 +236,22 @@ export class PostsService {
         return qr ? qr.manager.getRepository<PostsModel>(PostsModel) : this.postsRepository;
       }
 
+      async incrementCommentCount(postId: number, qr? : QueryRunner) {
+        const repository = this.getRepository(qr);
+
+        await repository.increment({
+          id: postId,
+        }, 'commentCount', 1)
+      }
+
+
+      async decrementCommentCount(postId: number, qr? : QueryRunner) {
+        const repository = this.getRepository(qr);
+
+        await repository.decrement({
+          id: postId,
+        }, 'commentCount', 1)
+      }
 
     async createPost(authorId: number, postDto: CreatePostDto, qr?: QueryRunner) {
       // title: string, content: 

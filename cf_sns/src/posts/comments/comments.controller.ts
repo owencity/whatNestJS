@@ -11,10 +11,14 @@ import { UsersModel } from 'src/users/entities/users.entity';
 import { UpdateCommentsDto } from './dto/update-comments.dto';
 import { IsPublic } from 'src/common/decorator/is-public.decorator';
 import { IsCommentMineOrAdminGuard } from './guard/is-comment-mine-or-admin.guard';
+import { PostsService } from '../posts.service';
 
 @Controller('posts/:postId/comments')
 export class CommentsController {
-  constructor(private readonly commentsService: CommentsService) {
+  constructor(
+    private readonly commentsService: CommentsService,
+    private readonly postsService: PostsService,
+  ) {
     /* 
       모듈, 리포티터리 설정 유의할것
 
@@ -59,18 +63,26 @@ export class CommentsController {
   
   
   @Post()
-  // @UseInterceptors(TransactionInterceptor)
+  @UseInterceptors(TransactionInterceptor)
   async postComment(
     @Param('postId', ParseIntPipe) postId: number,
     @Body() body: CreateCommentsDto,
     @User() user: UsersModel,
+    @QueryRunner() qr: QR,
     // @QueryRunner() qr: QR,
   ) {
-    return this.commentsService.createComment(
+   const response = await this.commentsService.createComment(
       body,
       postId,
       user,
     );
+
+    await this.postsService.incrementCommentCount(
+      postId,
+      qr,
+    );
+
+    return response;
   }
 
   @Patch(':commentId')
@@ -86,10 +98,19 @@ export class CommentsController {
   }
   @Delete(':commentId')
   @UseGuards(IsCommentMineOrAdminGuard)
-  deleteComment(
+  @UseInterceptors(TransactionInterceptor)
+   async deleteComment(
     @Param('commentId', ParseIntPipe) commentId: number,
+    @Param('postId', ParseIntPipe) postId: number,
+    @QueryRunner() qr : QR,
   ) {
-    return this.commentsService.deleteComment(commentId);
+
+    const response = await this.commentsService.deleteComment(commentId, qr);
+
+    await this.postsService.decrementCommentCount(postId, qr);
+
+    return response;
+   
   }
 }
 

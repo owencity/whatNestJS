@@ -21,6 +21,7 @@ export class CommentsService {
     private readonly commentsRepository: Repository<CommentsModel>,
     private readonly commonService: CommonService,
     ) {}
+
     
     getRepository(qr?: QueryRunner){
         return qr ? qr.manager.getRepository<CommentsModel>(CommentsModel) : this.commentsRepository;
@@ -84,8 +85,10 @@ export class CommentsService {
         dto: CreateCommentsDto,
         postId: number,
         author: UsersModel,
+        qr? : QueryRunner,
         ) {
-            return this.commentsRepository.save({
+            const repository = this.getRepository(qr);
+            return repository.save({
                 ...dto,
                 post:{
                     id: postId
