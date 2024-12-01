@@ -10,6 +10,7 @@ import { PaginateCommentsDto } from './dto/paginate-comments.dto';
 import { UsersModel } from 'src/users/entities/users.entity';
 import { UpdateCommentsDto } from './dto/update-comments.dto';
 import { IsPublic } from 'src/common/decorator/is-public.decorator';
+import { IsCommentMineOrAdminGuard } from './guard/is-comment-mine-or-admin.guard';
 
 @Controller('posts/:postId/comments')
 export class CommentsController {
@@ -73,6 +74,7 @@ export class CommentsController {
   }
 
   @Patch(':commentId')
+  @UseGuards(IsCommentMineOrAdminGuard)
   async patchComment(
     @Param('commentId', ParseIntPipe) commentId: number, 
     @Body() body: UpdateCommentsDto
@@ -83,6 +85,7 @@ export class CommentsController {
    )
   }
   @Delete(':commentId')
+  @UseGuards(IsCommentMineOrAdminGuard)
   deleteComment(
     @Param('commentId', ParseIntPipe) commentId: number,
   ) {

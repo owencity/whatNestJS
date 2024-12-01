@@ -21,6 +21,7 @@ import { CommentsModule } from './posts/comments/comments.module';
 import { CommentsModel } from './posts/comments/entity/comments.entity';
 import { RolesGuard } from './users/guard/roles.guard';
 import { AccessTokenGuard } from './auth/guard/bearer-token.guard';
+import { UserFollowersModel } from './users/entities/user-followers.entity';
 
 
 @Module({
@@ -49,6 +50,7 @@ import { AccessTokenGuard } from './auth/guard/bearer-token.guard';
         ChatsModel,
         MessagesModel,
         CommentsModel,
+        UserFollowersModel,
       ],
       synchronize: true,
       // synchronize 를 true로 할시 TypeORM 은 엔티티와 테이블 구조를 자동으로 동기화 한다.

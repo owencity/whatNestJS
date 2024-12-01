@@ -22,6 +22,10 @@ export class CommentsService {
     private readonly commonService: CommonService,
     ) {}
     
+    getRepository(qr?: QueryRunner){
+        return qr ? qr.manager.getRepository<CommentsModel>(CommentsModel) : this.commentsRepository;
+    }
+
     paginateComments(
         dto: PaginateCommentsDto,
         postId: number,
@@ -144,8 +148,11 @@ export class CommentsService {
     }
     //댓글 삭제
     async deleteComment(
-        id : number
-    ) {
+        id : number,
+        qr? : QueryRunner,
+    ) { 
+        const repository = this.getRepository(qr);
+
         const comment = this.commentsRepository.findOne({
             where : {
                 id,
@@ -158,7 +165,7 @@ export class CommentsService {
             )
         }
 
-        await this.commentsRepository.delete(id);
+        await repository.delete(id);
         return id;
     }
 
@@ -186,8 +193,8 @@ export class CommentsService {
 // }
 
     async commentMine(
+        userId : number,
         commentId: number,
-        userId : number
     ) {
         return this.commentsRepository.exists({
             where: {
