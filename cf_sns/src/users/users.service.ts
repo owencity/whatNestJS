@@ -55,6 +55,13 @@ export class UsersService {
         const newUser = await this.usersRepository.save(userObject);
 
         return newUser;
+
+        /* 
+        await는 비동기 코드의 결과를 기다리기 위해 사용하는 구문, 비동기 처리와 동시 처리를 어떻게 구성하느냐에 따라 동작이 달라짐
+        await는 각 비동기 작업이 완료될때까지 순차적으로 기다림
+        모든 작업이 반드시 순차적으로 실행되어야 하는 것은 아님 
+        병렬 -> Promise.all 사용(단점: 개별에러 체크 불가)
+        */
     }
 
     async getAllUsers() {

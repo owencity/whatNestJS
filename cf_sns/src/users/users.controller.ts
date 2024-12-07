@@ -20,6 +20,9 @@ export class UsersController {
     -> class의 object에서 JSON 포멧으로 변환
 
     deserialization -> 역직렬화 
+
+    App module 에서 전역으로 RoleGuard 설정으로 Guard에서는 Reflector 활용하여
+    메타데이터를 읽어 role 유효성 검사를 진행한다.
   */
   getUsers() {
     return this.usersService.getAllUsers();

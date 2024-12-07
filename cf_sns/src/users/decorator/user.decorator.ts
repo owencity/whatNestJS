@@ -15,4 +15,8 @@ export const User = createParamDecorator((data: keyof UsersModel | undefined, co
     }
 
     return user;
+    /* 
+        req.user에 접근하여 사용자 정보를 가져오는 반족적인 작업을 줄이기 위함
+        data 매개변수를 통한 usersModel 에서 특정속성(user.id, user.email)만 추출
+    */
 });
